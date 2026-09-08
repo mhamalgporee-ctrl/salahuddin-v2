@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>مواقيت الصلاة والطقس</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-dark: #0B101E; /* لون كحلي ليلي عميق ومريح */
+      --card-bg: #151C2C;
+      --card-border: #2A3655;
+      --gold: #D4AF37; /* ذهبي أنيق غير فاقع */
+      --gold-light: #F3E5AB;
+      --text-main: #FFFFFF;
+      --text-muted: #94A3B8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Cairo', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at top center, #1A2438 0%, var(--bg-dark) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 15px 10px;
+    }
+
+    /* الحاوية الرئيسية */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* العنوان */
+    .header {
+      text-align: center;
+      padding: 10px 0;
+    }
+    .header h1 {
+      font-family: 'Amiri', serif;
+      font-size: 2.2rem;
+      color: var(--gold);
+      margin-bottom: 5px;
+      text-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
+    }
+    .header p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* بطاقة المعلومات الأساسية (الطقس، التاريخ، الموقع) */
+    .hero-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .hero-section i {
+      font-size: 1.4rem;
+      color: var(--gold);
+    }
+
+    .hero-value {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    
+    .hero-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* شبكة مواقيت الصلاة - مقسمة 3×2 لمنع التداخل تماماً */
+    .prayers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .prayer-card {
+      background: linear-gradient(145deg, #151C2C, #0F1523);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 15px 5px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .prayer-icon {
+      font-size: 1.3rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .prayer-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 4px;
+    }
+
+    .prayer-time {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .prayer-ampm {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* تفاصيل الطقس السفلية - قابلة للتمرير الجانبي */
+    .weather-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+      scrollbar-width: none; /* إخفاء شريط التمرير في فايرفوكس */
+    }
+    .weather-scroll::-webkit-scrollbar {
+      display: none; /* إخفاء شريط التمرير في كروم/سفاري */
+    }
+
+    .w-detail-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 12px 15px;
+      min-width: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .w-detail-card i {
+      color: var(--gold);
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    .w-detail-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      margin-bottom: 4px;
+    }
+
+    .w-detail-val {
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    /* قائمة الأقضية */
+    .districts-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 15px;
+    }
+
+    .districts-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .districts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .district-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .district-item.active {
+      background: rgba(212, 175, 55, 0.1);
+      border-color: rgba(212, 175, 55, 0.3);
+    }
+
+    .district-item.active .d-name, .district-item.active .d-num {
+      color: var(--gold);
+    }
+
+    .d-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .d-num {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      background: rgba(0,0,0,0.2);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    /* الفوتر */
+    .footer {
+      text-align: center;
+      padding: 15px 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-top: 1px solid var(--card-border);
+      margin-top: 10px;
+    }
+    .footer span {
+      color: var(--gold);
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- العنوان -->
+    <header class="header">
+      <h1>مواقيت الصلاة</h1>
+      <p>صلاح الدين ونواحيها</p>
+    </header>
+
+    <!-- بطاقة المعلومات الرئيسية -->
+    <section class="hero-card">
+      <div class="hero-section">
+        <i class="fa-solid fa-location-dot"></i>
+        <span class="hero-value" id="current-location">الشرقاط</span>
+        <span class="hero-label">الموقع الحالي</span>
+      </div>
+      
+      <div class="hero-section" style="border-right: 1px solid var(--card-border); border-left: 1px solid var(--card-border); padding: 0 20px;">
+        <i class="fa-regular fa-calendar-days"></i>
+        <span class="hero-value" id="current-date">--/--/----</span>
+        <span class="hero-label" id="current-day">اليوم</span>
+      </div>
+
+      <div class="hero-section">
+        <i class="fa-solid fa-cloud-sun" id="main-weather-icon"></i>
+        <span class="hero-value" id="main-temp">--°</span>
+        <span class="hero-label" id="main-desc">جاري التحميل</span>
+      </div>
+    </section>
+
+    <!-- شبكة مواقيت الصلاة -->
+    <section class="prayers-grid">
+      <div class="prayer-card">
+        <i class="fa-solid fa-cloud-moon prayer-icon" style="color: #cbd5e1;"></i>
+        <div class="prayer-name">الفجر</div>
+        <div class="prayer-time" id="t-Fajr">--:--</div>
+        <div class="prayer-ampm" id="p-Fajr">-</div>
+      </div>
+      
+      <div class="prayer-card">
+        <i class="fa-solid fa-sun prayer-icon" style="color: #fde047;"></i>
+        <div class="prayer-name">الشروق</div>
+        <div class="prayer-time" id="t-Sunrise">--:--</div>
+        <div class="prayer-ampm" id="p-Sunrise">-</div>
+      </div>
+      
+      <div class="prayer-card">
+        <i class="fa-solid fa-sun prayer-icon" style="color: #fbbf24;"></i>
+        <div class="prayer-name">الظهر</div>
+        <div class="prayer-time" id="t-Dhuhr">--:--</div>
+        <div class="prayer-ampm" id="p-Dhuhr">-</div>
+      </div>
+      
+      <div class="prayer-card">
+        <i class="fa-solid fa-cloud-sun prayer-icon" style="color: #f59e0b;"></i>
+        <div class="prayer-name">العصر</div>
+        <div class="prayer-time" id="t-Asr">--:--</div>
+        <div class="prayer-ampm" id="p-Asr">-</div>
+      </div>
+      
+      <div class="prayer-card">
+        <i class="fa-solid fa-sunset prayer-icon" style="color: #ea580c;"></i>
+        <div class="prayer-name">المغرب</div>
+        <div class="prayer-time" id="t-Maghrib">--:--</div>
+        <div class="prayer-ampm" id="p-Maghrib">-</div>
+      </div>
+      
+      <div class="prayer-card">
+        <i class="fa-solid fa-moon prayer-icon" style="color: #94a3b8;"></i>
+        <div class="prayer-name">العشاء</div>
+        <div class="prayer-time" id="t-Isha">--:--</div>
+        <div class="prayer-ampm" id="p-Isha">-</div>
+      </div>
+    </section>
+
+    <!-- تفاصيل الطقس (قابلة للتمرير) -->
+    <section class="weather-scroll">
+      <div class="w-detail-card">
+        <i class="fa-solid fa-droplet" style="color: #38bdf8;"></i>
+        <span class="w-detail-label">الرطوبة</span>
+        <span class="w-detail-val" id="w-humidity">-%</span>
+      </div>
+      <div class="w-detail-card">
+        <i class="fa-solid fa-wind" style="color: #94a3b8;"></i>
+        <span class="w-detail-label">الرياح</span>
+        <span class="w-detail-val" id="w-wind">- كم/س</span>
+      </div>
+      <div class="w-detail-card">
+        <i class="fa-solid fa-temperature-arrow-up" style="color: #ef4444;"></i>
+        <span class="w-detail-label">العظمى</span>
+        <span class="w-detail-val" id="w-max">--°</span>
+      </div>
+      <div class="w-detail-card">
+        <i class="fa-solid fa-temperature-arrow-down" style="color: #3b82f6;"></i>
+        <span class="w-detail-label">الصغرى</span>
+        <span class="w-detail-val" id="w-min">--°</span>
+      </div>
+    </section>
+
+    <!-- قائمة الأقضية -->
+    <section class="districts-container">
+      <div class="districts-title">
+        <i class="fa-solid fa-map-location-dot"></i> اختر القضاء
+      </div>
+      <div class="districts-list" id="districts-list">
+        <!-- يتم الإضافة برمجياً -->
+      </div>
+    </section>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+      تصميم وبرمجة <span>محمد علي أحمد الحطاب الجبوري</span>
+    </footer>
+
+  </div>
+
+  <script>
+    const districts = [
+      { id: 1, name: "قضاء تكريت (المركز)", searchName: "تكريت", lat: 34.6057, lon: 43.6786 },
+      { id: 2, name: "قضاء سامراء", searchName: "سامراء", lat: 34.1983, lon: 43.8742 },
+      { id: 3, name: "قضاء الشرقاط", searchName: "الشرقاط", lat: 35.4883, lon: 43.2503 },
+      { id: 4, name: "قضاء بيجي", searchName: "بيجي", lat: 34.9297, lon: 43.4889 },
+      { id: 5, name: "قضاء بلد", searchName: "بلد", lat: 34.0142, lon: 44.1453 },
+      { id: 6, name: "قضاء الدجيل", searchName: "الدجيل", lat: 33.8467, lon: 44.2342 },
+      { id: 7, name: "قضاء الدور", searchName: "الدور", lat: 34.4578, lon: 43.7917 },
+      { id: 8, name: "قضاء طوزخورماتو", searchName: "طوزخورماتو", lat: 34.8878, lon: 44.6319 },
+      { id: 9, name: "قضاء العلم", searchName: "العلم", lat: 34.7028, lon: 43.6967 }
+    ];
+
+    // تعيين القضاء الافتراضي
+    let currentDistrict = districts.find(d => d.id === 3) || districts[0];
+
+    function renderDistricts() {
+      const container = document.getElementById('districts-list');
+      container.innerHTML = '';
+      districts.forEach(d => {
+        const row = document.createElement('div');
+        const isActive = d.id === currentDistrict.id;
+        row.className = `district-item ${isActive ? 'active' : ''}`;
+        row.onclick = () => selectDistrict(d);
+        
+        row.innerHTML = `
+          <span class="d-name">${d.name}</span>
+          <span class="d-num">${d.id}</span>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function selectDistrict(d) {
+      currentDistrict = d;
+      document.getElementById('current-location').textContent = d.searchName;
+      renderDistricts();
+      fetchPrayerTimes();
+      fetchWeather();
+    }
+
+    function formatTime12(timeStr) {
+      if(!timeStr) return { time: '--:--', period: '' };
+      const clean = timeStr.split(' ')[0];
+      let [h, m] = clean.split(':').map(Number);
+      const period = h >= 12 ? 'م' : 'ص';
+      h = h % 12 || 12;
+      return {
+        time: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+        period: period
+      };
+    }
+
+    async function fetchPrayerTimes() {
+      try {
+        const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${currentDistrict.lat}&longitude=${currentDistrict.lon}&method=5`);
+        const data = await res.json();
+        if(data.code === 200) {
+          const t = data.data.timings;
+          const list = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+          list.forEach(p => {
+            const formatted = formatTime12(t[p]);
+            document.getElementById(`t-${p}`).textContent = formatted.time;
+            document.getElementById(`p-${p}`).textContent = formatted.period;
+          });
+        }
+      } catch(e) {
+        console.error("خطأ في جلب الصلاة:", e);
+      }
+    }
+
+    async function fetchWeather() {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentDistrict.lat}&longitude=${currentDistrict.lon}&current_weather=true&hourly=relativehumidity_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+        const data = await res.json();
+        
+        if (data.current_weather) {
+          const cw = data.current_weather;
+          document.getElementById('main-temp').textContent = `${Math.round(cw.temperature)}°`;
+          document.getElementById('w-wind').textContent = `${Math.round(cw.windspeed)} كم/س`;
+          
+          let sky = "صافي";
+          let icon = "fa-sun";
+          if (cw.weathercode >= 1 && cw.weathercode <= 3) { sky = "غائم جزئياً"; icon = "fa-cloud-sun"; }
+          else if (cw.weathercode >= 45) { sky = "ممطر / ضباب"; icon = "fa-cloud-rain"; }
+          
+          document.getElementById('main-desc').textContent = sky;
+          document.getElementById('main-weather-icon').className = `fa-solid ${icon}`;
+        }
+
+        if (data.hourly && data.hourly.relativehumidity_2m) {
+          document.getElementById('w-humidity').textContent = `${data.hourly.relativehumidity_2m[0]}%`;
+        }
+
+        if (data.daily) {
+          document.getElementById('w-max').textContent = `${Math.round(data.daily.temperature_2m_max[0])}°`;
+          document.getElementById('w-min').textContent = `${Math.round(data.daily.temperature_2m_min[0])}°`;
+        }
+      } catch(e) {
+        console.error("خطأ في جلب الطقس:", e);
+      }
+    }
+
+    function initDate() {
+      const now = new Date();
+      const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+      document.getElementById('current-day').textContent = days[now.getDay()];
+      document.getElementById('current-date').textContent = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
+    }
+
+    // التشغيل
+    initDate();
+    document.getElementById('current-location').textContent = currentDistrict.searchName;
+    renderDistricts();
+    fetchPrayerTimes();
+    fetchWeather();
+  </script>
+</body>
+</html>
