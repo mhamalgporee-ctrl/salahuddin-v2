@@ -3,16 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0B101E">
   <title>مواقيت الصلاة والطقس</title>
+  
+  <!-- ربط ملف الـ PWA والصور بالأحجام المحددة -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- الخطوط والأيقونات -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     :root {
-      --bg-dark: #0B101E; /* لون كحلي ليلي عميق ومريح */
+      --bg-dark: #0B101E;
       --card-bg: #151C2C;
       --card-border: #2A3655;
-      --gold: #D4AF37; /* ذهبي أنيق غير فاقع */
+      --gold: #D4AF37;
       --gold-light: #F3E5AB;
       --text-main: #FFFFFF;
       --text-muted: #94A3B8;
@@ -36,7 +45,6 @@
       padding: 15px 10px;
     }
 
-    /* الحاوية الرئيسية */
     .app-container {
       width: 100%;
       max-width: 480px;
@@ -45,7 +53,6 @@
       gap: 15px;
     }
 
-    /* العنوان */
     .header {
       text-align: center;
       padding: 10px 0;
@@ -63,7 +70,6 @@
       font-weight: 600;
     }
 
-    /* بطاقة المعلومات الأساسية (الطقس، التاريخ، الموقع) */
     .hero-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -99,7 +105,6 @@
       font-weight: 600;
     }
 
-    /* شبكة مواقيت الصلاة - مقسمة 3×2 لمنع التداخل تماماً */
     .prayers-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -143,16 +148,15 @@
       color: var(--text-muted);
     }
 
-    /* تفاصيل الطقس السفلية - قابلة للتمرير الجانبي */
     .weather-scroll {
       display: flex;
       gap: 10px;
       overflow-x: auto;
       padding-bottom: 5px;
-      scrollbar-width: none; /* إخفاء شريط التمرير في فايرفوكس */
+      scrollbar-width: none;
     }
     .weather-scroll::-webkit-scrollbar {
-      display: none; /* إخفاء شريط التمرير في كروم/سفاري */
+      display: none;
     }
 
     .w-detail-card {
@@ -186,7 +190,6 @@
       font-weight: 800;
     }
 
-    /* قائمة الأقضية */
     .districts-container {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -250,7 +253,6 @@
       border-radius: 50%;
     }
 
-    /* الفوتر */
     .footer {
       text-align: center;
       padding: 15px 0;
@@ -263,20 +265,17 @@
     .footer span {
       color: var(--gold);
     }
-
   </style>
 </head>
 <body>
 
   <div class="app-container">
     
-    <!-- العنوان -->
     <header class="header">
       <h1>مواقيت الصلاة</h1>
       <p>صلاح الدين ونواحيها</p>
     </header>
 
-    <!-- بطاقة المعلومات الرئيسية -->
     <section class="hero-card">
       <div class="hero-section">
         <i class="fa-solid fa-location-dot"></i>
@@ -297,7 +296,6 @@
       </div>
     </section>
 
-    <!-- شبكة مواقيت الصلاة -->
     <section class="prayers-grid">
       <div class="prayer-card">
         <i class="fa-solid fa-cloud-moon prayer-icon" style="color: #cbd5e1;"></i>
@@ -342,7 +340,6 @@
       </div>
     </section>
 
-    <!-- تفاصيل الطقس (قابلة للتمرير) -->
     <section class="weather-scroll">
       <div class="w-detail-card">
         <i class="fa-solid fa-droplet" style="color: #38bdf8;"></i>
@@ -366,17 +363,14 @@
       </div>
     </section>
 
-    <!-- قائمة الأقضية -->
     <section class="districts-container">
       <div class="districts-title">
         <i class="fa-solid fa-map-location-dot"></i> اختر القضاء
       </div>
       <div class="districts-list" id="districts-list">
-        <!-- يتم الإضافة برمجياً -->
       </div>
     </section>
 
-    <!-- الفوتر -->
     <footer class="footer">
       تصميم وبرمجة <span>محمد علي أحمد الحطاب الجبوري</span>
     </footer>
@@ -396,7 +390,6 @@
       { id: 9, name: "قضاء العلم", searchName: "العلم", lat: 34.7028, lon: 43.6967 }
     ];
 
-    // تعيين القضاء الافتراضي
     let currentDistrict = districts.find(d => d.id === 3) || districts[0];
 
     function renderDistricts() {
@@ -493,12 +486,20 @@
       document.getElementById('current-date').textContent = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
     }
 
-    // التشغيل
     initDate();
     document.getElementById('current-location').textContent = currentDistrict.searchName;
     renderDistricts();
     fetchPrayerTimes();
     fetchWeather();
+
+    // تسجيل الـ Service Worker لإنشاء التطبيق PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('تم تسجيل Service Worker بنجاح'))
+          .catch(err => console.error('خطأ في التسجيل:', err));
+      });
+    }
   </script>
 </body>
 </html>
